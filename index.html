@@ -317,7 +317,7 @@ $("send-recovery-otp").addEventListener("click",async()=>{
  const btn=$("send-recovery-otp");btn.disabled=true;
  try{await callGrowerFunction("grower-phone-otp",{action:"send",purpose:"recovery",phone});recoveryPhone=phone;recoveryVerified=false;show("recovery-code-area",true);show("recovery-password-area",false);startOtpCountdown("recovery");notice("recovery-message","درخواست ارسال کد ثبت شد. پیامک را بررسی کنید.");}
  catch(e){notice("recovery-message",authErrorText(e),true);}
- finally{btn.disabled=false;}
+ finally{if(!otpTimers.recovery)btn.disabled=false;}
 });
 $("verify-recovery-otp").addEventListener("click",async()=>{
  clearNotice("recovery-message");const code=toEnglishDigits($("recovery-code").value).trim();
@@ -345,7 +345,7 @@ $("send-signup-otp").addEventListener("click",async()=>{
  const btn=$("send-signup-otp");btn.disabled=true;
  try{await callGrowerFunction("grower-phone-otp",{action:"send",purpose:"signup",phone});signupPhone=phone;signupVerified=false;show("signup-otp-area",true);show("signup-password-area",false);show("signup-verified",false);startOtpCountdown("signup");notice("register-message","درخواست ارسال کد ثبت شد. پیامک را بررسی کنید.");}
  catch(e){notice("register-message",authErrorText(e),true);}
- finally{btn.disabled=false;}
+ finally{if(!otpTimers.signup)btn.disabled=false;}
 });
 $("verify-signup-otp").addEventListener("click",async()=>{
  clearNotice("register-message");const code=toEnglishDigits($("signup-code").value).trim();
