@@ -247,8 +247,8 @@ async function enter(){
  show("login-card",false);show("logout",true);
  if(pe||re){show("account-pending");show("app",false);$("pending-message").textContent="بررسی وضعیت حساب انجام نشد. لطفاً بعداً تلاش کنید یا با مدیر سامانه تماس بگیرید.";return;}
  if(profile?.account_status!=="active"||!role){
-  document.body.classList.add("auth-locked");
-  show("account-pending");show("app",false);
+  document.body.classList.remove("auth-locked");
+  show("login-card",false);show("account-pending");show("app",false);
   $("pending-message").textContent="حساب شما هنوز به‌عنوان گلخانه‌دار فعال نشده است. پس از بررسی مدیر سامانه، امکان ثبت گلخانه و دوره کشت فعال خواهد شد.";
   return;
  }
