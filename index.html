@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#123d35">
 <title>پنل گلخانه‌دار | سامانه مشاوره گلخانه</title>
 <style>
-body.auth-locked #app,body.auth-locked #logout{display:none!important}body.auth-locked #login-card,body.auth-locked #auth-shell{display:block!important}body.auth-locked main{max-width:520px;margin:7vh auto;padding:0 16px}body.auth-locked header{justify-content:center;text-align:center}body.auth-locked header>div{width:100%}body.auth-locked #account-pending{display:none!important}
+body.auth-locked #app,body.auth-locked #logout{display:none!important}body.auth-locked #auth-shell{display:block!important}body.auth-locked main{max-width:520px;margin:7vh auto;padding:0 16px}body.auth-locked header{justify-content:center;text-align:center}body.auth-locked header>div{width:100%}body.auth-locked #account-pending{display:none!important}
 :root{font-family:Tahoma,Arial,sans-serif;color:#18332c;background:#f3f7f5;font-synthesis:none}
 *{box-sizing:border-box}body{margin:0}header{background:#123d35;color:#fff;padding:20px max(16px,calc((100% - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:12px}
 h1{font-size:19px;margin:0 0 5px}header p{margin:0;color:#c5d8d1;font-size:12px}
@@ -256,7 +256,7 @@ async function enter(){
  show("account-pending",false);show("app",true);
  const full=[profile.first_name,profile.last_name].filter(Boolean).join(" ");
  $("welcome").textContent=full?"خوش آمدید، "+full:"پنل گلخانه‌دار";
- $("profile-line").textContent="ایمیل حساب: "+user.email+(profile.phone?" · تلفن: "+profile.phone:"");
+ $("profile-line").textContent="شماره موبایل: "+(profile.phone||"ثبت نشده");
  await refreshAll();await loadCases();
 }
 function toEnglishDigits(value){return String(value||"").replace(/[۰-۹]/g,d=>String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))).replace(/[٠-٩]/g,d=>String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));}
