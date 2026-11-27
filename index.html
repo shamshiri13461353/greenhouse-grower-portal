@@ -260,7 +260,7 @@ async function enter(){
  await refreshAll();await loadCases();
 }
 function toEnglishDigits(value){return String(value||"").replace(/[۰-۹]/g,d=>String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))).replace(/[٠-٩]/g,d=>String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));}
-function normalizePhone(value){let p=toEnglishDigits(value).replace(/[\\s()-]/g,"");if(p.startsWith("+98"))p="0"+p.slice(3);else if(p.startsWith("0098"))p="0"+p.slice(4);else if(p.startsWith("98")&&p.length===12)p="0"+p.slice(2);return /^09\\d{9}$/.test(p)?p:null;}
+function normalizePhone(value){let p=toEnglishDigits(value).replace(/[\s()-]/g,"");if(p.startsWith("+98"))p="0"+p.slice(3);else if(p.startsWith("0098"))p="0"+p.slice(4);else if(p.startsWith("98")&&p.length===12)p="0"+p.slice(2);return /^09\d{9}$/.test(p)?p:null;}
 async function callGrowerFunction(name,payload){const response=await fetch(SUPABASE_URL+"/functions/v1/"+name,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_PUBLISHABLE_KEY,"Authorization":"Bearer "+SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify(payload)});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"request_failed");return data;}
 const authErrors={invalid_phone:"شماره موبایل معتبر نیست. شماره را با ۰۹ وارد کنید.",phone_already_registered:"این شماره موبایل قبلاً ثبت‌نام کرده است.",send_cooldown:"برای ارسال دوباره کد باید کمی صبر کنید.",invalid_or_expired_code:"کد تأیید نادرست است یا اعتبار آن پایان یافته است.",code_expired_or_not_requested:"کد معتبر یا درخواست‌شده‌ای برای این شماره وجود ندارد.",password_length_invalid:"گذرواژه باید حداقل ۸ نویسه باشد.",phone_not_verified_or_expired:"ابتدا شماره موبایل را با کد پیامکی تأیید کنید.",account_creation_failed_try_again:"ساخت حساب انجام نشد. دوباره تلاش کنید.",server_configuration_error:"تنظیمات سرویس پیامک در سرور کامل نیست.",temporary_service_error:"سرویس موقتاً در دسترس نیست. کمی بعد تلاش کنید.",sms_provider_error:"ارسال پیامک از سوی سرویس‌دهنده انجام نشد.",invalid_code_format:"کد تأیید باید ۶ رقم باشد."};
 function authErrorText(error){return authErrors[error?.message]||"عملیات انجام نشد. لطفاً اطلاعات را بررسی و دوباره تلاش کنید.";}
@@ -279,7 +279,7 @@ $("send-signup-otp").addEventListener("click",async()=>{
 });
 $("verify-signup-otp").addEventListener("click",async()=>{
  clearNotice("register-message");const code=toEnglishDigits($("signup-code").value).trim();
- if(!signupPhone||!/^\\d{6}$/.test(code)){notice("register-message","کد پیامکی ۶ رقمی را وارد کنید.",true);return;}
+ if(!signupPhone||!/^\d{6}$/.test(code)){notice("register-message","کد پیامکی ۶ رقمی را وارد کنید.",true);return;}
  const btn=$("verify-signup-otp");btn.disabled=true;
  try{await callGrowerFunction("grower-phone-otp",{action:"verify",purpose:"signup",phone:signupPhone,code});signupVerified=true;show("signup-verified",true);show("signup-password-area",true);notice("register-message","شماره موبایل با موفقیت تأیید شد.");}
  catch(e){notice("register-message",authErrorText(e),true);}
