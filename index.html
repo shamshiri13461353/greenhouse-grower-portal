@@ -37,6 +37,7 @@ button.secondary{background:#e9f1ed;color:#194c3e}button:disabled{opacity:.5;cur
   <label for="login-phone">شماره موبایل</label><input id="login-phone" type="tel" inputmode="tel" autocomplete="username" placeholder="۰۹۱۲۱۲۳۴۵۶۷" dir="ltr">
   <label for="password">گذرواژه</label><div class="password-wrap"><input id="password" type="password" autocomplete="current-password"><button id="toggle-password" class="password-toggle" type="button" aria-label="نمایش گذرواژه" aria-pressed="false" title="نمایش گذرواژه"><svg id="password-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
   <div class="actions"><button id="login">ورود</button><button id="show-register" class="secondary" type="button">ثبت‌نام گلخانه‌دار جدید</button></div>
+  <p><button id="show-recovery" class="secondary" type="button">فراموشی گذرواژه؟ بازیابی با پیامک</button></p>
   <div id="login-message" class="notice hidden"></div>
  </section>
  <section id="register-card" class="card hidden">
@@ -59,6 +60,23 @@ button.secondary{background:#e9f1ed;color:#194c3e}button:disabled{opacity:.5;cur
    <div class="actions"><button id="complete-register" type="button">تکمیل ثبت‌نام</button></div>
   </div>
   <div id="register-message" class="notice hidden"></div>
+ </section>
+ <section id="recovery-card" class="card hidden">
+  <div class="topline"><h2>بازیابی گذرواژه</h2><button id="back-recovery" class="secondary" type="button">بازگشت به ورود</button></div>
+  <p class="muted">شماره موبایل حساب خود را وارد کنید. پس از تأیید کد پیامکی، می‌توانید گذرواژه تازه تعیین کنید.</p>
+  <label for="recovery-phone">شماره موبایل</label><input id="recovery-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="۰۹۱۲۱۲۳۴۵۶۷" dir="ltr">
+  <div class="actions"><button id="send-recovery-otp" type="button">ارسال کد بازیابی</button></div>
+  <div id="recovery-code-area" class="hidden">
+   <label for="recovery-code">کد تأیید پیامک‌شده</label><input id="recovery-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="کد ۶ رقمی" dir="ltr">
+   <div class="actions"><button id="verify-recovery-otp" type="button">تأیید کد پیامکی</button></div>
+  </div>
+  <div id="recovery-password-area" class="hidden">
+   <p class="notice">شماره تأیید شد. گذرواژه جدید باید حداقل ۱۲ نویسه داشته باشد.</p>
+   <label for="recovery-password">گذرواژه جدید</label><input id="recovery-password" type="password" autocomplete="new-password">
+   <label for="recovery-password-confirm">تکرار گذرواژه جدید</label><input id="recovery-password-confirm" type="password" autocomplete="new-password">
+   <div class="actions"><button id="complete-recovery" type="button">ثبت گذرواژه جدید</button></div>
+  </div>
+  <div id="recovery-message" class="notice hidden"></div>
  </section>
  </section>
  <section id="account-pending" class="card hidden">
@@ -262,11 +280,40 @@ async function enter(){
 function toEnglishDigits(value){return String(value||"").replace(/[۰-۹]/g,d=>String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))).replace(/[٠-٩]/g,d=>String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));}
 function normalizePhone(value){let p=toEnglishDigits(value).replace(/[\s()-]/g,"");if(p.startsWith("+98"))p="0"+p.slice(3);else if(p.startsWith("0098"))p="0"+p.slice(4);else if(p.startsWith("98")&&p.length===12)p="0"+p.slice(2);return /^09\d{9}$/.test(p)?p:null;}
 async function callGrowerFunction(name,payload){const response=await fetch(SUPABASE_URL+"/functions/v1/"+name,{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_PUBLISHABLE_KEY,"Authorization":"Bearer "+SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify(payload)});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"request_failed");return data;}
-const authErrors={invalid_phone:"شماره موبایل معتبر نیست. شماره را با ۰۹ وارد کنید.",phone_already_registered:"این شماره موبایل قبلاً ثبت‌نام کرده است.",send_cooldown:"برای ارسال دوباره کد باید کمی صبر کنید.",invalid_or_expired_code:"کد تأیید نادرست است یا اعتبار آن پایان یافته است.",code_expired_or_not_requested:"کد معتبر یا درخواست‌شده‌ای برای این شماره وجود ندارد.",password_length_invalid:"گذرواژه باید حداقل ۸ نویسه باشد.",phone_not_verified_or_expired:"ابتدا شماره موبایل را با کد پیامکی تأیید کنید.",account_creation_failed_try_again:"ساخت حساب انجام نشد. دوباره تلاش کنید.",server_configuration_error:"تنظیمات سرویس پیامک در سرور کامل نیست.",temporary_service_error:"سرویس موقتاً در دسترس نیست. کمی بعد تلاش کنید.",sms_provider_error:"ارسال پیامک از سوی سرویس‌دهنده انجام نشد.",invalid_code_format:"کد تأیید باید ۶ رقم باشد."};
+const authErrors={invalid_phone:"شماره موبایل معتبر نیست. شماره را با ۰۹ وارد کنید.",phone_already_registered:"این شماره موبایل قبلاً ثبت‌نام کرده است.",send_cooldown:"برای ارسال دوباره کد باید کمی صبر کنید.",invalid_or_expired_code:"کد تأیید نادرست است یا اعتبار آن پایان یافته است.",code_expired_or_not_requested:"کد معتبر یا درخواست‌شده‌ای برای این شماره وجود ندارد.",password_length_invalid:"گذرواژه باید حداقل ۸ نویسه باشد.",phone_not_verified_or_expired:"ابتدا شماره موبایل را با کد پیامکی تأیید کنید.",account_creation_failed_try_again:"ساخت حساب انجام نشد. دوباره تلاش کنید.",server_configuration_error:"تنظیمات سرویس پیامک در سرور کامل نیست.",temporary_service_error:"سرویس موقتاً در دسترس نیست. کمی بعد تلاش کنید.",sms_provider_error:"ارسال پیامک از سوی سرویس‌دهنده انجام نشد.",invalid_code_format:"کد تأیید باید ۶ رقم باشد.",recovery_not_available_or_expired:"بازیابی برای این شماره امکان‌پذیر نیست یا کد آن منقضی شده است.",invalid_input:"اطلاعات واردشده معتبر نیست. گذرواژه باید حداقل ۱۲ نویسه داشته باشد.",password_update_failed:"تغییر گذرواژه انجام نشد. دوباره تلاش کنید.",request_failed:"درخواست انجام نشد. دوباره تلاش کنید."};
 function authErrorText(error){return authErrors[error?.message]||"عملیات انجام نشد. لطفاً اطلاعات را بررسی و دوباره تلاش کنید.";}
 $("toggle-password").addEventListener("click",()=>{const input=$("password"),button=$("toggle-password");const reveal=input.type==="password";input.type=reveal?"text":"password";button.setAttribute("aria-pressed",String(reveal));button.setAttribute("aria-label",reveal?"پنهان کردن گذرواژه":"نمایش گذرواژه");button.title=reveal?"پنهان کردن گذرواژه":"نمایش گذرواژه";$("password-eye").innerHTML=reveal?'<path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a15.7 15.7 0 0 1-3.1 3.9"/><path d="M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7c1 0 1.9-.2 2.8-.5"/>' : '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>';});
 $("show-register").addEventListener("click",()=>{show("login-card",false);show("register-card",true);clearNotice("register-message");});
 $("back-login").addEventListener("click",()=>{show("register-card",false);show("login-card",true);});
+$("show-recovery").addEventListener("click",()=>{show("login-card",false);show("recovery-card",true);clearNotice("recovery-message");$("recovery-phone").value=$("login-phone").value;});
+$("back-recovery").addEventListener("click",()=>{show("recovery-card",false);show("login-card",true);});
+let recoveryPhone=null,recoveryVerified=false;
+$("send-recovery-otp").addEventListener("click",async()=>{
+ clearNotice("recovery-message");const phone=normalizePhone($("recovery-phone").value);
+ if(!phone){notice("recovery-message","شماره موبایل معتبر نیست. شماره را با ۰۹ وارد کنید.",true);return;}
+ const btn=$("send-recovery-otp");btn.disabled=true;
+ try{await callGrowerFunction("grower-phone-otp",{action:"send",purpose:"recovery",phone});recoveryPhone=phone;recoveryVerified=false;show("recovery-code-area",true);show("recovery-password-area",false);notice("recovery-message","درخواست ارسال کد ثبت شد. پیامک را بررسی کنید.");}
+ catch(e){notice("recovery-message",authErrorText(e),true);}
+ finally{btn.disabled=false;}
+});
+$("verify-recovery-otp").addEventListener("click",async()=>{
+ clearNotice("recovery-message");const code=toEnglishDigits($("recovery-code").value).trim();
+ if(!recoveryPhone||!/^\d{6}$/.test(code)){notice("recovery-message","کد پیامکی ۶ رقمی را وارد کنید.",true);return;}
+ const btn=$("verify-recovery-otp");btn.disabled=true;
+ try{await callGrowerFunction("grower-phone-otp",{action:"verify",purpose:"recovery",phone:recoveryPhone,code});recoveryVerified=true;show("recovery-password-area",true);notice("recovery-message","شماره موبایل تأیید شد. گذرواژه جدید را تعیین کنید.");}
+ catch(e){notice("recovery-message",authErrorText(e),true);}
+ finally{btn.disabled=false;}
+});
+$("complete-recovery").addEventListener("click",async()=>{
+ clearNotice("recovery-message");const password=$("recovery-password").value;
+ if(!recoveryVerified||!recoveryPhone){notice("recovery-message","ابتدا شماره موبایل را با کد پیامکی تأیید کنید.",true);return;}
+ if(password.length<12||password.length>72){notice("recovery-message","گذرواژه جدید باید بین ۱۲ تا ۷۲ نویسه باشد.",true);return;}
+ if(password!==$("recovery-password-confirm").value){notice("recovery-message","تکرار گذرواژه با گذرواژه جدید یکسان نیست.",true);return;}
+ const btn=$("complete-recovery");btn.disabled=true;
+ try{await callGrowerFunction("grower-password-reset",{phone:recoveryPhone,password});notice("recovery-message","گذرواژه با موفقیت تغییر کرد. اکنون با شماره موبایل و گذرواژه جدید وارد شوید.");show("recovery-code-area",false);show("recovery-password-area",false);$("login-phone").value=recoveryPhone;$("password").value="";show("recovery-card",false);show("login-card",true);notice("login-message","گذرواژه تغییر کرد. با گذرواژه جدید وارد شوید.");}
+ catch(e){notice("recovery-message",authErrorText(e),true);}
+ finally{btn.disabled=false;}
+});
 let signupPhone=null,signupVerified=false;
 $("send-signup-otp").addEventListener("click",async()=>{
  clearNotice("register-message");const phone=normalizePhone($("reg-phone").value);
